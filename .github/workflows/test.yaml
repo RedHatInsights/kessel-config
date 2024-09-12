@@ -1,4 +1,4 @@
-name: lint-yaml
+name: validate-schema
 on:
   push:
     branches: [ 'master' ]
