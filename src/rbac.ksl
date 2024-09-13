@@ -1,7 +1,7 @@
 version 0.1
-module rbac
+namespace rbac
 
-// TODO: do we need to distinguish between service
+// TODO: do we need to distinguish between service account and user principles as separate types?
 type user {}
 
 type realm {
@@ -21,7 +21,7 @@ type group {
 
 type role {}
 
-type role_binding { // Revisit cardinality based on clamping decisions
+type role_binding { // TODO: revisit cardinality based on clamping decisions
     relation subject: [Any user or group.member]
     relation granted: [Any role]
 }
@@ -31,30 +31,7 @@ public type workspace {
     relation user_grant: [Any role_binding]
 }
 
-
-public extension add_v1_compatible_permission(v1_perm, v2_perm) {
-    type role {
-        allow_duplicates relation `${v1_perm}`: [bool]
-        relation `${v2_perm}`: [bool] or `${v1_perm}`
-    }
-
-    type role_binding {
-        relation `${v2_perm}`: subject and granted.`${v2_perm}`
-    }
-
-    type realm {
-        relation `${v2_perm}`: user_grant.`${v2_perm}`
-    }
-
-    type tenant {
-        relation `${v2_perm}`: user_grant.`${v2_perm}` or realm.`${v2_perm}`
-    }
-
-    type workspace {
-        relation `${v2_perm}`: user_grant.`${v2_perm}` or parent.`${v2_perm}`
-    }
-}
-
+// Adds a permission that's checkable at the workspace but granted by assigning a different, V1 permission to the role
 public extension add_v1_based_permission(v1_perm, v2_perm) {
     type role {
         allow_duplicates relation `${v1_perm}`: [bool]
@@ -78,6 +55,7 @@ public extension add_v1_based_permission(v1_perm, v2_perm) {
     }
 }
 
+// Adds a permission that's both assignable to a role and checkable at a workspace
 public extension add_permission(workspace_perm) {
     type role {
         relation `${workspace_perm}`: [bool]
