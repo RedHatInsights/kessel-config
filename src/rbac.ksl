@@ -35,11 +35,34 @@ public type workspace {
 public extension add_v1_compatible_permission(v1_perm, v2_perm) {
     type role {
         allow_duplicates relation `${v1_perm}`: [bool]
-        relation `${v2_perm}`: [bool]
+        relation `${v2_perm}`: [bool] or `${v1_perm}`
     }
 
     type role_binding {
-        relation `${v2_perm}`: subject and (granted.`${v2_perm}` or granted.`${v1_perm}`)
+        relation `${v2_perm}`: subject and granted.`${v2_perm}`
+    }
+
+    type realm {
+        relation `${v2_perm}`: user_grant.`${v2_perm}`
+    }
+
+    type tenant {
+        relation `${v2_perm}`: user_grant.`${v2_perm}` or realm.`${v2_perm}`
+    }
+
+    type workspace {
+        relation `${v2_perm}`: user_grant.`${v2_perm}` or parent.`${v2_perm}`
+    }
+}
+
+public extension add_v1_based_permission(v1_perm, v2_perm) {
+    type role {
+        allow_duplicates relation `${v1_perm}`: [bool]
+        relation `${v2_perm}`: `${v1_perm}`
+    }
+
+    type role_binding {
+        relation `${v2_perm}`: subject and granted.`${v2_perm}`
     }
 
     type realm {
