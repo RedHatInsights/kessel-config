@@ -1,6 +1,7 @@
 version 0.1
 module rbac
 
+// TODO: do we need to distinguish between service
 type user {}
 
 type realm {
