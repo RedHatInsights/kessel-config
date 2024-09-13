@@ -32,26 +32,26 @@ public type workspace {
 }
 
 
-public extension add_permission_with_legacy(legacy_perm, granular_perm) {
+public extension add_v1_compatible_permission(v1_perm, v2_perm) {
     type role {
-        allow_duplicates relation `${legacy_perm}`: [bool]
-        relation `${granular_perm}`: [bool]
+        allow_duplicates relation `${v1_perm}`: [bool]
+        relation `${v2_perm}`: [bool]
     }
 
     type role_binding {
-        relation `${granular_perm}`: subject and (granted.`${granular_perm}` or granted.`${legacy_perm}`)
+        relation `${v2_perm}`: subject and (granted.`${v2_perm}` or granted.`${v1_perm}`)
     }
 
     type realm {
-        relation `${granular_perm}`: user_grant.`${granular_perm}`
+        relation `${v2_perm}`: user_grant.`${v2_perm}`
     }
 
     type tenant {
-        relation `${granular_perm}`: user_grant.`${granular_perm}` or realm.`${granular_perm}`
+        relation `${v2_perm}`: user_grant.`${v2_perm}` or realm.`${v2_perm}`
     }
 
     type workspace {
-        relation `${granular_perm}`: user_grant.`${granular_perm}` or parent.`${granular_perm}`
+        relation `${v2_perm}`: user_grant.`${v2_perm}` or parent.`${v2_perm}`
     }
 }
 
