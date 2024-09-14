@@ -2,31 +2,32 @@ version 0.1
 namespace rbac
 
 // TODO: do we need to distinguish between service account and user principles as separate types?
-type user {}
+public type user {} //public for now since the [bool] type requires rbac/user to be accessible
 
-type realm {
+// Other types for structuring access are marked internal but can be made public if services are intended to relate to them
+internal type realm {
     relation user_grant: [Any role_binding]
 }
 
-type tenant {
+internal type tenant {
     relation realm: [ExactlyOne realm]
     relation user_grant: [Any role_binding]
     relation member: [Any user]
 }
 
-type group {
+internal type group {
     relation owner: [ExactlyOne tenant]
     relation member: [Any user or group.member]
 }
 
-type role {}
+internal type role {}
 
-type role_binding { // TODO: revisit cardinality based on clamping decisions
+internal type role_binding { // TODO: revisit cardinality based on clamping decisions
     relation subject: [Any user or group.member]
     relation granted: [Any role]
 }
 
-public type workspace {
+public type workspace { //Workspace is public so services can place resources into workspaces
     relation parent: [ExactlyOne workspace or tenant]
     relation user_grant: [Any role_binding]
 }
@@ -34,7 +35,7 @@ public type workspace {
 // Adds a permission that's checkable at the workspace but granted by assigning a different, V1 permission to the role
 public extension add_v1_based_permission(v1_perm, v2_perm) {
     type role {
-        allow_duplicates relation `${v1_perm}`: [bool]
+        allow_duplicates private relation `${v1_perm}`: [bool] //v1 relations are private so they can only be used within the role type (for the corresponding v2 permissions)
         relation `${v2_perm}`: `${v1_perm}`
     }
 
