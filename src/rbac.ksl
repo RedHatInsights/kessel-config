@@ -20,7 +20,9 @@ internal type group {
     relation member: [Any user or group.member]
 }
 
-internal type role {}
+internal type role {
+    private relation all_all_all: [bool]
+}
 
 internal type role_binding { // TODO: revisit cardinality based on clamping decisions
     relation subject: [Any user or group.member]
@@ -33,10 +35,14 @@ public type workspace { //Workspace is public so services can place resources in
 }
 
 // Adds a permission that's checkable at the workspace but granted by assigning a different, V1 permission to the role
-public extension add_v1_based_permission(v1_perm, v2_perm) {
+public extension add_v1_based_permission(app, resource, verb, v2_perm) {
     type role {
-        allow_duplicates private relation `${v1_perm}`: [bool] //v1 relations are private so they can only be used within the role type (for the corresponding v2 permissions)
-        relation `${v2_perm}`: `${v1_perm}`
+        allow_duplicates private relation `${app}_all_all`: [bool]
+        allow_duplicates private relation `${app}_${resource}_all`: [bool]
+        allow_duplicates private relation `${app}_all_${verb}`: [bool]
+        allow_duplicates private relation `${app}_${resource}_${verb}`: [bool]
+
+        relation `${v2_perm}`: `${app}_${resource}_${verb}` or `${app}_${resource}_all` or `${app}_all_${verb}` or `${app}_all_all` or all_all_all
     }
 
     type role_binding {
@@ -56,25 +62,9 @@ public extension add_v1_based_permission(v1_perm, v2_perm) {
     }
 }
 
-// Adds a permission that's both assignable to a role and checkable at a workspace
-public extension add_permission(workspace_perm) {
+// Adds a permission that's only assignable to the role, for migration purposes
+public extension add_v1only_permission(perm) {
     type role {
-        relation `${workspace_perm}`: [bool]
-    }
-
-    type role_binding {
-        relation `${workspace_perm}`: subject and granted.`${workspace_perm}`
-    }
-
-    type realm {
-        relation `${workspace_perm}`: user_grant.`${workspace_perm}`
-    }
-
-    type tenant {
-        relation `${workspace_perm}`: user_grant.`${workspace_perm}` or realm.`${workspace_perm}`
-    }
-
-    type workspace {
-        relation `${workspace_perm}`: user_grant.`${workspace_perm}` or parent.`${workspace_perm}`
+        private relation `${perm}`: [bool]
     }
 }
