@@ -1,6 +1,4 @@
 definition notifications/integration {
-	permission test = t_workspace->notifications_integration_test
-	permission view_history = t_workspace->notifications_integration_view_history
 	permission delete = t_workspace->notifications_integration_delete
 	permission disable = t_workspace->notifications_integration_disable
 	permission enable = t_workspace->notifications_integration_enable
@@ -8,133 +6,135 @@ definition notifications/integration {
 	relation t_workspace: rbac/workspace
 	permission view = t_workspace->notifications_integration_view
 	permission edit = t_workspace->notifications_integration_edit
+	permission test = t_workspace->notifications_integration_test
+	permission view_history = t_workspace->notifications_integration_view_history
 }
 
-definition rbac/user {}
+definition rbac/principal {}
 
-definition rbac/realm {
-	permission notifications_daily_digest_preference_view = t_user_grant->notifications_daily_digest_preference_view
-	permission notifications_integration_edit = t_user_grant->notifications_integration_edit
-	permission notifications_integration_test = t_user_grant->notifications_integration_test
-	permission notifications_integration_delete = t_user_grant->notifications_integration_delete
-	permission notifications_integration_disable = t_user_grant->notifications_integration_disable
-	permission notifications_integration_create = t_user_grant->notifications_integration_create
-	permission notifications_integration_subscribe_drawer = t_user_grant->notifications_integration_subscribe_drawer
-	permission notifications_integration_view = t_user_grant->notifications_integration_view
-	permission user_grant = t_user_grant
-	relation t_user_grant: rbac/role_binding
-	permission notifications_integration_view_history = t_user_grant->notifications_integration_view_history
-	permission notifications_integration_enable = t_user_grant->notifications_integration_enable
-	permission notifications_daily_digest_preference_edit = t_user_grant->notifications_daily_digest_preference_edit
-	permission notifications_integration_subscribe_email = t_user_grant->notifications_integration_subscribe_email
-	permission notifications_event_log_view = t_user_grant->notifications_event_log_view
+definition rbac/platform {
+	permission notifications_integration_view = t_binding->notifications_integration_view
+	permission notifications_integration_view_history = t_binding->notifications_integration_view_history
+	permission notifications_integration_delete = t_binding->notifications_integration_delete
+	permission notifications_integration_enable = t_binding->notifications_integration_enable
+	permission notifications_integration_subscribe_email = t_binding->notifications_integration_subscribe_email
+	permission binding = t_binding
+	relation t_binding: rbac/role_binding
+	permission notifications_daily_digest_preference_view = t_binding->notifications_daily_digest_preference_view
+	permission notifications_integration_test = t_binding->notifications_integration_test
+	permission notifications_integration_create = t_binding->notifications_integration_create
+	permission notifications_event_log_view = t_binding->notifications_event_log_view
+	permission notifications_integration_edit = t_binding->notifications_integration_edit
+	permission notifications_integration_disable = t_binding->notifications_integration_disable
+	permission notifications_daily_digest_preference_edit = t_binding->notifications_daily_digest_preference_edit
+	permission notifications_integration_subscribe_drawer = t_binding->notifications_integration_subscribe_drawer
 }
 
 definition rbac/tenant {
-	permission member = t_member
-	relation t_member: rbac/user
-	permission notifications_integration_test = t_user_grant->notifications_integration_test + t_realm->notifications_integration_test
-	permission notifications_daily_digest_preference_view = t_user_grant->notifications_daily_digest_preference_view + t_realm->notifications_daily_digest_preference_view
-	permission notifications_integration_view_history = t_user_grant->notifications_integration_view_history + t_realm->notifications_integration_view_history
-	permission notifications_integration_delete = t_user_grant->notifications_integration_delete + t_realm->notifications_integration_delete
-	permission notifications_integration_subscribe_drawer = t_user_grant->notifications_integration_subscribe_drawer + t_realm->notifications_integration_subscribe_drawer
-	permission notifications_integration_subscribe_email = t_user_grant->notifications_integration_subscribe_email + t_realm->notifications_integration_subscribe_email
-	permission notifications_integration_view = t_user_grant->notifications_integration_view + t_realm->notifications_integration_view
-	permission realm = t_realm
-	relation t_realm: rbac/realm
-	permission user_grant = t_user_grant
-	relation t_user_grant: rbac/role_binding
-	permission notifications_integration_create = t_user_grant->notifications_integration_create + t_realm->notifications_integration_create
-	permission notifications_integration_disable = t_user_grant->notifications_integration_disable + t_realm->notifications_integration_disable
-	permission notifications_integration_enable = t_user_grant->notifications_integration_enable + t_realm->notifications_integration_enable
-	permission notifications_daily_digest_preference_edit = t_user_grant->notifications_daily_digest_preference_edit + t_realm->notifications_daily_digest_preference_edit
-	permission notifications_event_log_view = t_user_grant->notifications_event_log_view + t_realm->notifications_event_log_view
-	permission notifications_integration_edit = t_user_grant->notifications_integration_edit + t_realm->notifications_integration_edit
+	permission notifications_daily_digest_preference_view = t_binding->notifications_daily_digest_preference_view + t_platform->notifications_daily_digest_preference_view
+	permission notifications_integration_subscribe_email = t_binding->notifications_integration_subscribe_email + t_platform->notifications_integration_subscribe_email
+	permission notifications_integration_view_history = t_binding->notifications_integration_view_history + t_platform->notifications_integration_view_history
+	permission notifications_daily_digest_preference_edit = t_binding->notifications_daily_digest_preference_edit + t_platform->notifications_daily_digest_preference_edit
+	permission notifications_integration_subscribe_drawer = t_binding->notifications_integration_subscribe_drawer + t_platform->notifications_integration_subscribe_drawer
+	permission platform = t_platform
+	relation t_platform: rbac/platform
+	permission notifications_integration_create = t_binding->notifications_integration_create + t_platform->notifications_integration_create
+	permission notifications_event_log_view = t_binding->notifications_event_log_view + t_platform->notifications_event_log_view
+	permission notifications_integration_view = t_binding->notifications_integration_view + t_platform->notifications_integration_view
+	permission binding = t_binding
+	relation t_binding: rbac/role_binding
+	permission notifications_integration_delete = t_binding->notifications_integration_delete + t_platform->notifications_integration_delete
+	permission notifications_integration_disable = t_binding->notifications_integration_disable + t_platform->notifications_integration_disable
+	permission notifications_integration_enable = t_binding->notifications_integration_enable + t_platform->notifications_integration_enable
+	permission notifications_integration_edit = t_binding->notifications_integration_edit + t_platform->notifications_integration_edit
+	permission notifications_integration_test = t_binding->notifications_integration_test + t_platform->notifications_integration_test
 }
 
 definition rbac/group {
 	permission owner = t_owner
 	relation t_owner: rbac/tenant
 	permission member = t_member
-	relation t_member: rbac/user | rbac/group#member
+	relation t_member: rbac/principal | rbac/group#member
 }
 
 definition rbac/role {
-	permission notifications_integration_subscribe_email = notifications_integrations_read + notifications_integrations_all + notifications_all_read + notifications_all_all + all_all_all
-	permission notifications_events_all = t_notifications_events_all
-	relation t_notifications_events_all: rbac/user:*
-	permission notifications_events_read = t_notifications_events_read
-	relation t_notifications_events_read: rbac/user:*
-	permission notifications_integration_view = notifications_integrations_read + notifications_integrations_all + notifications_all_read + notifications_all_all + all_all_all
-	permission notifications_integrations_all = t_notifications_integrations_all
-	relation t_notifications_integrations_all: rbac/user:*
-	permission notifications_all_write = t_notifications_all_write
-	relation t_notifications_all_write: rbac/user:*
-	permission notifications_integration_delete = notifications_integrations_write + notifications_integrations_all + notifications_all_write + notifications_all_all + all_all_all
-	permission notifications_integration_enable = notifications_integrations_write + notifications_integrations_all + notifications_all_write + notifications_all_all + all_all_all
-	permission notifications_integration_edit = notifications_integrations_write + notifications_integrations_all + notifications_all_write + notifications_all_all + all_all_all
-	permission notifications_event_log_view = notifications_events_read + notifications_events_all + notifications_all_read + notifications_all_all + all_all_all
-	permission all_all_all = t_all_all_all
-	relation t_all_all_all: rbac/user:*
-	permission notifications_all_all = t_notifications_all_all
-	relation t_notifications_all_all: rbac/user:*
-	permission notifications_integration_view_history = notifications_integrations_read + notifications_integrations_all + notifications_all_read + notifications_all_all + all_all_all
-	permission notifications_daily_digest_preference_edit = notifications_notifications_write + notifications_notifications_all + notifications_all_write + notifications_all_all + all_all_all
 	permission notifications_notifications_read = t_notifications_notifications_read
-	relation t_notifications_notifications_read: rbac/user:*
-	permission notifications_daily_digest_preference_view = notifications_notifications_read + notifications_notifications_all + notifications_all_read + notifications_all_all + all_all_all
-	permission notifications_integrations_write = t_notifications_integrations_write
-	relation t_notifications_integrations_write: rbac/user:*
-	permission notifications_all_read = t_notifications_all_read
-	relation t_notifications_all_read: rbac/user:*
+	relation t_notifications_notifications_read: rbac/principal:*
+	permission notifications_integration_view_history = notifications_integrations_read + notifications_integrations_all + notifications_all_read + notifications_all_all + all_all_all + t_child->notifications_integration_view_history
+	permission notifications_integration_enable = notifications_integrations_write + notifications_integrations_all + notifications_all_write + notifications_all_all + all_all_all + t_child->notifications_integration_enable
 	permission notifications_notifications_all = t_notifications_notifications_all
-	relation t_notifications_notifications_all: rbac/user:*
+	relation t_notifications_notifications_all: rbac/principal:*
+	permission notifications_integration_create = notifications_integrations_write + notifications_integrations_all + notifications_all_write + notifications_all_all + all_all_all + t_child->notifications_integration_create
+	permission notifications_integration_subscribe_email = notifications_integrations_read + notifications_integrations_all + notifications_all_read + notifications_all_all + all_all_all + t_child->notifications_integration_subscribe_email
+	permission all_all_all = t_all_all_all
+	relation t_all_all_all: rbac/principal:*
+	permission notifications_integration_delete = notifications_integrations_write + notifications_integrations_all + notifications_all_write + notifications_all_all + all_all_all + t_child->notifications_integration_delete
+	permission notifications_integration_disable = notifications_integrations_write + notifications_integrations_all + notifications_all_write + notifications_all_all + all_all_all + t_child->notifications_integration_disable
 	permission notifications_notifications_write = t_notifications_notifications_write
-	relation t_notifications_notifications_write: rbac/user:*
-	permission notifications_integration_subscribe_drawer = notifications_integrations_read + notifications_integrations_all + notifications_all_read + notifications_all_all + all_all_all
-	permission notifications_integration_test = notifications_integrations_write + notifications_integrations_all + notifications_all_write + notifications_all_all + all_all_all
+	relation t_notifications_notifications_write: rbac/principal:*
+	permission notifications_daily_digest_preference_edit = notifications_notifications_write + notifications_notifications_all + notifications_all_write + notifications_all_all + all_all_all + t_child->notifications_daily_digest_preference_edit
+	permission notifications_all_read = t_notifications_all_read
+	relation t_notifications_all_read: rbac/principal:*
 	permission notifications_integrations_read = t_notifications_integrations_read
-	relation t_notifications_integrations_read: rbac/user:*
-	permission notifications_integration_disable = notifications_integrations_write + notifications_integrations_all + notifications_all_write + notifications_all_all + all_all_all
-	permission notifications_integration_create = notifications_integrations_write + notifications_integrations_all + notifications_all_write + notifications_all_all + all_all_all
+	relation t_notifications_integrations_read: rbac/principal:*
+	permission notifications_event_log_view = notifications_events_read + notifications_events_all + notifications_all_read + notifications_all_all + all_all_all + t_child->notifications_event_log_view
+	permission child = t_child
+	relation t_child: rbac/role
+	permission notifications_integrations_all = t_notifications_integrations_all
+	relation t_notifications_integrations_all: rbac/principal:*
+	permission notifications_events_all = t_notifications_events_all
+	relation t_notifications_events_all: rbac/principal:*
+	permission notifications_integration_test = notifications_integrations_write + notifications_integrations_all + notifications_all_write + notifications_all_all + all_all_all + t_child->notifications_integration_test
+	permission notifications_integrations_write = t_notifications_integrations_write
+	relation t_notifications_integrations_write: rbac/principal:*
+	permission notifications_daily_digest_preference_view = notifications_notifications_read + notifications_notifications_all + notifications_all_read + notifications_all_all + all_all_all + t_child->notifications_daily_digest_preference_view
+	permission notifications_integration_subscribe_drawer = notifications_integrations_read + notifications_integrations_all + notifications_all_read + notifications_all_all + all_all_all + t_child->notifications_integration_subscribe_drawer
+	permission notifications_events_read = t_notifications_events_read
+	relation t_notifications_events_read: rbac/principal:*
+	permission notifications_integration_view = notifications_integrations_read + notifications_integrations_all + notifications_all_read + notifications_all_all + all_all_all + t_child->notifications_integration_view
+	permission notifications_integration_edit = notifications_integrations_write + notifications_integrations_all + notifications_all_write + notifications_all_all + all_all_all + t_child->notifications_integration_edit
+	permission notifications_all_all = t_notifications_all_all
+	relation t_notifications_all_all: rbac/principal:*
+	permission notifications_all_write = t_notifications_all_write
+	relation t_notifications_all_write: rbac/principal:*
 }
 
 definition rbac/role_binding {
 	permission subject = t_subject
-	relation t_subject: rbac/user | rbac/group#member
-	permission notifications_integration_test = (subject & t_granted->notifications_integration_test)
-	permission notifications_daily_digest_preference_view = (subject & t_granted->notifications_daily_digest_preference_view)
-	permission notifications_integration_subscribe_drawer = (subject & t_granted->notifications_integration_subscribe_drawer)
-	permission notifications_integration_disable = (subject & t_granted->notifications_integration_disable)
-	permission notifications_integration_subscribe_email = (subject & t_granted->notifications_integration_subscribe_email)
-	permission notifications_integration_view = (subject & t_granted->notifications_integration_view)
-	permission notifications_integration_view_history = (subject & t_granted->notifications_integration_view_history)
-	permission notifications_integration_delete = (subject & t_granted->notifications_integration_delete)
-	permission notifications_daily_digest_preference_edit = (subject & t_granted->notifications_daily_digest_preference_edit)
-	permission notifications_integration_edit = (subject & t_granted->notifications_integration_edit)
-	permission granted = t_granted
-	relation t_granted: rbac/role
-	permission notifications_integration_enable = (subject & t_granted->notifications_integration_enable)
-	permission notifications_integration_create = (subject & t_granted->notifications_integration_create)
-	permission notifications_event_log_view = (subject & t_granted->notifications_event_log_view)
+	relation t_subject: rbac/principal | rbac/group#member
+	permission notifications_integration_subscribe_drawer = (subject & t_role->notifications_integration_subscribe_drawer)
+	permission notifications_integration_enable = (subject & t_role->notifications_integration_enable)
+	permission notifications_integration_subscribe_email = (subject & t_role->notifications_integration_subscribe_email)
+	permission notifications_integration_create = (subject & t_role->notifications_integration_create)
+	permission notifications_daily_digest_preference_edit = (subject & t_role->notifications_daily_digest_preference_edit)
+	permission notifications_daily_digest_preference_view = (subject & t_role->notifications_daily_digest_preference_view)
+	permission notifications_integration_delete = (subject & t_role->notifications_integration_delete)
+	permission notifications_integration_disable = (subject & t_role->notifications_integration_disable)
+	permission notifications_integration_view = (subject & t_role->notifications_integration_view)
+	permission notifications_integration_edit = (subject & t_role->notifications_integration_edit)
+	permission notifications_integration_test = (subject & t_role->notifications_integration_test)
+	permission notifications_integration_view_history = (subject & t_role->notifications_integration_view_history)
+	permission role = t_role
+	relation t_role: rbac/role
+	permission notifications_event_log_view = (subject & t_role->notifications_event_log_view)
 }
 
 definition rbac/workspace {
-	permission notifications_integration_test = t_user_grant->notifications_integration_test + t_parent->notifications_integration_test
-	permission notifications_integration_subscribe_email = t_user_grant->notifications_integration_subscribe_email + t_parent->notifications_integration_subscribe_email
+	permission notifications_integration_disable = t_binding->notifications_integration_disable + t_parent->notifications_integration_disable
+	permission notifications_event_log_view = t_binding->notifications_event_log_view + t_parent->notifications_event_log_view
+	permission notifications_integration_test = t_binding->notifications_integration_test + t_parent->notifications_integration_test
+	permission notifications_integration_view_history = t_binding->notifications_integration_view_history + t_parent->notifications_integration_view_history
+	permission binding = t_binding
+	relation t_binding: rbac/role_binding
+	permission notifications_integration_subscribe_email = t_binding->notifications_integration_subscribe_email + t_parent->notifications_integration_subscribe_email
+	permission notifications_integration_edit = t_binding->notifications_integration_edit + t_parent->notifications_integration_edit
+	permission notifications_integration_delete = t_binding->notifications_integration_delete + t_parent->notifications_integration_delete
+	permission notifications_integration_enable = t_binding->notifications_integration_enable + t_parent->notifications_integration_enable
 	permission parent = t_parent
 	relation t_parent: rbac/workspace | rbac/tenant
-	permission notifications_integration_enable = t_user_grant->notifications_integration_enable + t_parent->notifications_integration_enable
-	permission notifications_event_log_view = t_user_grant->notifications_event_log_view + t_parent->notifications_event_log_view
-	permission notifications_integration_view = t_user_grant->notifications_integration_view + t_parent->notifications_integration_view
-	permission notifications_integration_disable = t_user_grant->notifications_integration_disable + t_parent->notifications_integration_disable
-	permission notifications_integration_create = t_user_grant->notifications_integration_create + t_parent->notifications_integration_create
-	permission notifications_daily_digest_preference_edit = t_user_grant->notifications_daily_digest_preference_edit + t_parent->notifications_daily_digest_preference_edit
-	permission notifications_daily_digest_preference_view = t_user_grant->notifications_daily_digest_preference_view + t_parent->notifications_daily_digest_preference_view
-	permission notifications_integration_subscribe_drawer = t_user_grant->notifications_integration_subscribe_drawer + t_parent->notifications_integration_subscribe_drawer
-	permission user_grant = t_user_grant
-	relation t_user_grant: rbac/role_binding
-	permission notifications_integration_delete = t_user_grant->notifications_integration_delete + t_parent->notifications_integration_delete
-	permission notifications_integration_edit = t_user_grant->notifications_integration_edit + t_parent->notifications_integration_edit
-	permission notifications_integration_view_history = t_user_grant->notifications_integration_view_history + t_parent->notifications_integration_view_history
+	permission notifications_integration_create = t_binding->notifications_integration_create + t_parent->notifications_integration_create
+	permission notifications_daily_digest_preference_edit = t_binding->notifications_daily_digest_preference_edit + t_parent->notifications_daily_digest_preference_edit
+	permission notifications_daily_digest_preference_view = t_binding->notifications_daily_digest_preference_view + t_parent->notifications_daily_digest_preference_view
+	permission notifications_integration_subscribe_drawer = t_binding->notifications_integration_subscribe_drawer + t_parent->notifications_integration_subscribe_drawer
+	permission notifications_integration_view = t_binding->notifications_integration_view + t_parent->notifications_integration_view
 }
